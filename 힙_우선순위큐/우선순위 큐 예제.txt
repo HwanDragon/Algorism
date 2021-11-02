@@ -53,7 +53,7 @@ int pop()
 	int current = 0;
 	int child = (current * 2) + 1;	// 왼쪽 자식 선택
 
-	while (current < cnt)
+	while (child < cnt)
 	{
 		// 배열 범위 벗어나는지 확인, 왼쪽 자식보다 오른쪽 자식이 더 크면, 더 큰 자식을 선택함
 		if ((heap[child] < heap[child + 1]) && ((child + 1) < cnt))
@@ -90,15 +90,15 @@ int main()
 	}
 
 	print();
-	cout << "result : " <<  pop();
+	cout << " - pop result : " << pop();
 	print();
-	cout << "result : " << pop();
+	cout << " - pop result : " << pop();
 	print();
-	cout << "result : " << pop();
+	cout << " - pop result : " << pop();
 	print();
-	cout << "result : " << pop();
+	cout << " - pop result : " << pop();
 	print();
-	cout << "result : " << pop();
+	cout << " - pop result : " << pop();
 
 	print();
 
