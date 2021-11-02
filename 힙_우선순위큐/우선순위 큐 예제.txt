@@ -1,27 +1,26 @@
 #include <iostream>
 
-#define MAX_SIZE 100
+#define MAX_SIZE 20
 
 using namespace std;
 
 int heap[MAX_SIZE] = { 0, };
-int n = 0;
+int cnt = 0;	// 힙에 추가한 데이터 개수
 
 // 힙 자료구조에 데이터 추가
-void push(int node) 
+void push(int node)
 {
-	if (n == MAX_SIZE)
+	if (cnt == MAX_SIZE)
 	{
 		cout << "데이터를 추가할 공간이 없습니다." << endl;
 		return;
 	}
 
-	heap[n] = node;	// 마지막에 데이터 추가
-	n++;	// 개수 증가
-
+	heap[cnt] = node;	// 마지막에 데이터 추가
+	
 	// 추가한 노드를 기점으로 부모가 값이 더 작으면 위치를 바꿔줌
-	int current = node;	
-	int root = (node - 1) / 2;
+	int current = cnt;
+	int root = (cnt - 1) / 2;
 	while (current != 0)
 	{
 		if (heap[current] > heap[root])
@@ -33,29 +32,31 @@ void push(int node)
 		current = root;
 		root = (current - 1) / 2;
 	}
+
+	cnt++;	// 개수 증가
 }
 
 // 힙 자료구조에서 데이터 꺼내기
 int pop()
 {
-	if (n == 0)
+	if (cnt == 0)
 	{
 		cout << "데이터가 없습니다" << endl;
 		return -1;
 	}
-		
+
 	// 가장 우선순위가 높은 데이터 반환
 	int result = heap[0];
-	heap[0] = heap[n - 1];	// 가장 마지막에 있는 데이터를 root로 올림
+	heap[0] = heap[cnt - 1];	// 가장 마지막에 있는 데이터를 root로 올림
 
 
 	int current = 0;
 	int child = (current * 2) + 1;	// 왼쪽 자식 선택
-	
-	while (current < n)
+
+	while (current < cnt)
 	{
 		// 배열 범위 벗어나는지 확인, 왼쪽 자식보다 오른쪽 자식이 더 크면, 더 큰 자식을 선택함
-		if ((heap[child] < heap[child + 1]) && ((child + 1) < n))
+		if ((heap[child] < heap[child + 1]) && ((child + 1) < cnt))
 			child += 1;
 
 		if (heap[current] < heap[child])
@@ -65,23 +66,23 @@ int pop()
 			heap[child] = temp;
 		}
 		current = child;
-		child = (current * 2) +1;
+		child = (current * 2) + 1;
 	}
 
-	n--;
+	cnt--;
 	return result;
 }
 
 void print()
 {
 	cout << "\n\n";
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < cnt; i++)
 	{
 		cout << heap[i] << " ";
 	}
 }
 
-int main() 
+int main()
 {
 	for (int i = 0; i < MAX_SIZE; i++)
 	{
@@ -89,11 +90,15 @@ int main()
 	}
 
 	print();
-	pop();
+	cout << "result : " <<  pop();
 	print();
-	pop();
+	cout << "result : " << pop();
 	print();
-	pop();
+	cout << "result : " << pop();
+	print();
+	cout << "result : " << pop();
+	print();
+	cout << "result : " << pop();
 
 	print();
 
