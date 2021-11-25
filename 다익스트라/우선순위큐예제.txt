@@ -8,41 +8,64 @@ using namespace std;
 #define NODE_COUNT 6	// 정점의 개수
 
 /*
-최단거리
 정답 : 0 2 3 1 2 4
 */
 
-// 간선 정보를 저장할 배열
-vector<pair<int, int>> edges[NODE_COUNT];
+// {노드, 비용}
+// edges 1번부터 사용하기위해 0번에는 아무것도 추가하지않음
+vector<pair<int, int>> edges[NODE_COUNT + 1] = 
+{
+	{},
+	{{2, 2}, {3, 5}, {4, 1}},
+	{{1, 2}, {3, 3}, {4, 2}},
+	{{1, 5}, {2, 3}, {4, 3}, {5, 1}, {6, 5}},
+	{{1, 1}, {2, 2}, {3, 3}, {5, 1}},
+	{{3, 1}, {4, 1}, {6, 2}},
+	{{3, 5}, {5, 2}}
+}
+;
+int dists[NODE_COUNT + 1] = { 0, };
 
-int dists[NODE_COUNT] = { 0, };
+struct cmp {
+	bool operator() (pair<int, int> &f, pair<int, int> &s) {
+		return f.second > s.second;
+	}
+};
 
 void dijkstra(int startNode)
 {
-	// 우선순위큐 {거리, 노드번호} 추가
-	priority_queue <pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
-	pq.push({0, startNode});	// 처음에 시작노드까지 가는 비용 추가
+	// 거리순으로 정렬하기위한 우선순위 큐 생성
+	priority_queue<pair<int, int>, vector<pair<int, int>>, cmp> pq;
+
+	// 시작노드엣 시작노드까지의 비용은 0으로 세팅
 	dists[startNode] = 0;
 
+	// 우선순위큐에 시작노드, 시작노드에서 시작노드까지의 비용 0 추가
+	pq.push({ startNode, 0 });
 	while (pq.empty() == false)
 	{
-		pair<int, int> p = pq.top();
-		int dist = p.first;
-		int current = p.second;
+		// 우선순위 큐에서 데이터를 꺼냄
+		// first는 현재 노드를 나타냄
+		// second는 이전 노드에서 현재노드까지의 비용을 나타냄
+		int current = pq.top().first;
+		int distToCurrent = pq.top().second;
 		pq.pop();
 
-		if (dists[current] < dist)	continue;	// 이미 더 적은 비용을 가짐
+		if (dists[current] < distToCurrent)	continue;	// 최단거리가 아님
 
 		for (int i = 0; i < edges[current].size(); i++)
 		{
-			pair<int, int> next = edges[current].at(i);
-			int nextDist = next.first;
-			int nextNode = next.second;
+			// 다음 노드까지의 비용 계산을 위해 edges에서 next node를 꺼냄
+			pair<int, int> p = edges[current][i];
+			int nextNode = p.first;
+			int distToNextNode = p.second;
 
-			if (dists[nextNode] > dist + nextDist)
-			{
-				dists[nextNode] = dist + nextDist;
-				pq.push({ dist + nextDist , nextNode});
+			// 이전 노드들에서 현재 노드까지의 거리 (distToCurrent)
+			// 현재 노드에서 다음 노드까지의 거리 (distToNextNode)
+			// 두 합이 다음노드까지의 이전 계산값(dists[nextNode])보다 비용이 작다면
+			if (dists[nextNode] > distToCurrent + distToNextNode) {
+				dists[nextNode] = distToCurrent + distToNextNode;	// 비용 갱신
+				pq.push({ nextNode, distToCurrent + distToNextNode });	// 다음 노드에 새로운 비용을 갱신하여 우선순위큐에 추가함
 			}
 		}
 	}
@@ -50,47 +73,18 @@ void dijkstra(int startNode)
 
 void print()
 {
-	for (int i = 0; i < NODE_COUNT; i++)
+	for (int i = 1; i <= NODE_COUNT; i++)
 	{
-		if (dists[i] == INF)
-			cout << "INF" << " ";
-		else
-			cout << dists[i] << " ";
+		cout << dists[i] << " ";
 	}
 }
 
-
 int main()
 {
-	for (int i = 0; i < NODE_COUNT; i++) dists[i] = INF;
-		
-	edges[0].push_back({ 2, 1 });	// {거리, 다음 노드}
-	edges[0].push_back({ 5, 2 });
-	edges[0].push_back({ 1, 3 });
+	dists[0] = -1;	// 안쓰는 노드
+	for (int i = 1; i <= NODE_COUNT; i++) dists[i] = INF;
 
-	edges[1].push_back({ 2, 0 });
-	edges[1].push_back({ 2, 3 });
-	edges[1].push_back({ 3, 2 });
-
-	edges[2].push_back({ 5, 0 });
-	edges[2].push_back({ 3, 1 });
-	edges[2].push_back({ 3, 3 });
-	edges[2].push_back({ 1, 4 });
-	edges[2].push_back({ 5, 5 });
-
-	edges[3].push_back({ 1, 0 });
-	edges[3].push_back({ 2, 1 });
-	edges[3].push_back({ 3, 2 });
-	edges[3].push_back({ 1, 4 });
-
-	edges[4].push_back({ 1, 2 });
-	edges[4].push_back({ 1, 3 });
-	edges[4].push_back({ 2, 5 });
-
-	edges[5].push_back({ 5, 2 });
-	edges[5].push_back({ 2, 4 });
-
-	dijkstra(0);
+	dijkstra(1);
 	print();
 
 	return 0;
