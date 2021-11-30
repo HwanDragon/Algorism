@@ -1,0 +1,83 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+
+#define NODE_SIZE 7
+
+using namespace std;
+
+/*
+* 입력값
+7 11
+1 7 12
+1 4 28
+1 2 67
+1 5 17
+2 4 24
+2 5 62
+3 5 20
+3 6 37
+4 7 13
+5 6 45
+5 7 73
+답 : 123
+*/
+
+bool visited[NODE_SIZE + 1] = { 0, };	// 해당노드를 선택했는지 여부 검사
+vector<pair<int, int>> edges[NODE_SIZE + 1];	// 간선 정보
+
+// 가중치를 기준으로 오름차순 정렬
+struct cmp {
+	bool operator()(pair<int, int> &f, pair<int, int> &s) {
+		return f.second > s.second;
+	}
+};
+
+int prim(int startNode)
+{
+	priority_queue<pair<int, int>, vector<pair<int, int>>, cmp> pq;
+	int result = 0;
+	pq.push({startNode, 0});
+
+	while (pq.empty() == false)
+	{
+		pair<int, int> p = pq.top();
+		pq.pop();
+		int node = p.first;
+		int weight = p.second;
+
+		if (visited[node] == false)	// 방문하지 않은 노드이면
+		{
+			visited[node] = true;	// 방문 체크
+			result += weight;	// 가중치 더함
+
+			// node와 연결된 모든 간선정보 추가함
+			for (int i = 0; i < edges[node].size(); i++)
+			{
+				pair<int, int> np = edges[node].at(i);
+				pq.push(np);
+			}
+		}
+	}
+
+	return result;
+}
+
+int main()
+{
+	int nodeCount, edgeCount;
+	cin >> nodeCount >> edgeCount;
+
+	int firstNode, secondNode, weight;
+	for (int i = 0; i < edgeCount; i++)
+	{
+		cin >> firstNode >> secondNode >> weight;
+		edges[firstNode].push_back({ secondNode, weight });
+		edges[secondNode].push_back({ firstNode, weight });
+	}
+
+	// 프림알고리즘을 시작할 임의의 노드 입력
+	cout << prim(1);	// 1번 노드에서부터 탐색
+
+}
