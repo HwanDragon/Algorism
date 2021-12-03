@@ -1,0 +1,80 @@
+#include <iostream>
+
+#define INF 1000000000
+#define NODE_COUNT 4
+
+using namespace std;
+
+/*
+정답:
+0 5 11 8
+7 0 9 13
+2 7 0 4
+5 10 3 0
+*/
+
+int a[NODE_COUNT][NODE_COUNT] = {
+	{0, 5, INF, 8},
+	{7, 0, 9, INF},
+	{2, INF, 0, 4},
+	{INF, INF, 3, 0}
+};
+
+int dists[NODE_COUNT][NODE_COUNT] = { 0, };
+
+void floydWarshall() 
+{
+	// 최단거리를 저장할 배열 초기화
+	for (int i = 0; i < NODE_COUNT; i++)
+	{
+		for (int j = 0; j < NODE_COUNT; j++)
+		{
+			dists[i][j] = a[i][j];
+		}
+	}
+
+	/*
+	시작노드 : i
+	도착노드 : j
+	거쳐가는 노드 : k
+
+	dists[i][j] -> i 에서 j로 가는데 걸리는 비용
+	dists[i][k]  -> i 에서 k로 가는데 걸리는 비용
+	dists[k][j]  -> k 에서 j로 가는데 걸리는 비용
+
+	비교 : 
+	i에서 j로 가는 비용과 
+	i에서 k로, k에서 j 로 가는 비용을 비교하여
+	k노드를 거쳐갈 경우 비용이 더 적으면 비용을 갱신시킴
+
+	해당 작업을 모든 노드에 대해서 반복하게되면 모든 노드에 대해 최단거리르 구하게됨(DP)
+	*/
+
+	for (int k = 0; k < NODE_COUNT; k++)
+	{
+		for (int i = 0; i < NODE_COUNT; i++)
+		{
+			for (int j = 0; j < NODE_COUNT; j++)
+			{
+				if (dists[i][j] > dists[i][k] + dists[k][j])
+				{
+					dists[i][j] = dists[i][k] + dists[k][j];
+				}
+			}
+		}
+	}
+}
+
+int main()
+{
+	floydWarshall();
+	for (int i = 0; i < NODE_COUNT; i++)
+	{
+		for (int j = 0; j < NODE_COUNT; j++)
+		{
+			cout << dists[i][j] << " ";
+		}
+		cout << endl;
+	}
+	return 0;
+}
