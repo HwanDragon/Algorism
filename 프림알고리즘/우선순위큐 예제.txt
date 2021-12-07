@@ -26,10 +26,11 @@ using namespace std;
 
 bool visited[NODE_SIZE + 1] = { 0, };	// 해당노드를 선택했는지 여부 검사
 vector<pair<int, int>> edges[NODE_SIZE + 1];	// 간선 정보
+int nodeCount, edgeCount;
 
 // 가중치를 기준으로 오름차순 정렬
 struct cmp {
-	bool operator()(pair<int, int> &f, pair<int, int> &s) {
+	bool operator()(pair<int, int>& f, pair<int, int>& s) {
 		return f.second > s.second;
 	}
 };
@@ -38,7 +39,8 @@ int prim(int startNode)
 {
 	priority_queue<pair<int, int>, vector<pair<int, int>>, cmp> pq;
 	int result = 0;
-	pq.push({startNode, 0});
+	pq.push({ startNode, 0 });
+	int cnt = 0;	// n - 1개의 간선 연결
 
 	while (pq.empty() == false)
 	{
@@ -51,10 +53,14 @@ int prim(int startNode)
 		{
 			visited[node] = true;	// 방문 체크
 			result += weight;	// 가중치 더함
+			cnt++;
+			if (cnt == nodeCount) // 시작점을 0의 가중치로 추가하여 node 개수만큼 연결해야함
+				break;
 
 			// node와 연결된 모든 간선정보 추가함
 			for (int i = 0; i < edges[node].size(); i++)
 			{
+				
 				pair<int, int> np = edges[node].at(i);
 				pq.push(np);
 			}
@@ -66,7 +72,6 @@ int prim(int startNode)
 
 int main()
 {
-	int nodeCount, edgeCount;
 	cin >> nodeCount >> edgeCount;
 
 	int firstNode, secondNode, weight;
