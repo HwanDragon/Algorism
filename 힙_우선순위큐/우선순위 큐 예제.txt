@@ -36,6 +36,10 @@ void push(int node)
 			heap[current] = heap[root];
 			heap[root] = temp;
 		}
+		else
+		{
+			break;
+		}
 		current = root;
 		root = (current - 1) / 2;
 	}
@@ -71,6 +75,10 @@ int pop()
 			int temp = heap[current];
 			heap[current] = heap[child];
 			heap[child] = temp;
+		}
+		else
+		{
+			break;
 		}
 		current = child;
 		child = (current * 2) + 1;
