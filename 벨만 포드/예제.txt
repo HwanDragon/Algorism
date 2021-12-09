@@ -45,7 +45,7 @@ bool bellmanFord(int startNode)
 {
 	dists[startNode] = 0;	// 시작 노드 0으로 초기화
 	/*
-	* 노드 개수만큼 반복해서 
+	* 노드 개수만큼 반복해서
 	* 모든 엣지에대해 relaxation 수행
 	*/
 	for (int i = 1; i <= n; i++)
@@ -56,6 +56,8 @@ bool bellmanFord(int startNode)
 			int first = edge->first;
 			int second = edge->second;
 			int weight = edge->weight;
+
+			if (dists[first] == INF) continue;	// 한번도 계산되지 않은 정점은 pass
 
 			if (dists[second] > dists[first] + weight)
 			{
@@ -81,7 +83,7 @@ int main()
 	}
 
 	// dists 배열 초기화
-	for (int i = 1; i <= n; i++) dists[i] = INF;	
+	for (int i = 1; i <= n; i++) dists[i] = INF;
 
 	// 벨만포드 알고리즘 수행
 	bool cycle = bellmanFord(1);
