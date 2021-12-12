@@ -1,0 +1,85 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <algorithm>
+
+#define NODE_COUNT 11
+
+using namespace std;
+
+int parents[NODE_COUNT + 1] = { 0, };
+bool finished[NODE_COUNT + 1] = { 0, };
+vector<vector<int>> SCC;
+stack<int> s;
+vector<int> edges[NODE_COUNT + 1];
+
+int dfs(int node)
+{
+	parents[node] = node;	// 노드별로 각각 부모 노드 설정
+	s.push(node);
+
+	for (int i = 0; i < edges[node].size(); i++)
+	{
+		int nextNode = edges[node].at(i);
+		if (parents[nextNode] == 0)	// 방문하지 않음
+		{
+			parents[node] = min(parents[node], dfs(nextNode));
+		}
+		else if (finished[nextNode] == false)
+		{
+			parents[node] = parents[nextNode];
+		}
+	}
+
+	if (parents[node] == node)	// 부모노드가 자기 자신인 경우
+	{
+		vector<int> scc;
+		while (true)
+		{
+			int t = s.top();
+			s.pop();
+			scc.push_back(t);
+			finished[t] = true;
+			if (t == node) break;
+		}
+		SCC.push_back(scc);
+	}
+
+	return parents[node];
+}
+
+int main()
+{
+	edges[1].push_back(2);
+	edges[2].push_back(3);
+	edges[3].push_back(1);
+	edges[4].push_back(2);
+	edges[4].push_back(5);
+	edges[5].push_back(7);
+	edges[6].push_back(5);
+	edges[7].push_back(6);
+	edges[8].push_back(5);
+	edges[8].push_back(9);
+	edges[9].push_back(10);
+	edges[10].push_back(11);
+	edges[11].push_back(3);
+	edges[11].push_back(8);
+
+	for (int i = 1; i <= NODE_COUNT; i++)
+	{
+		if (parents[i] == 0) dfs(i);
+	}
+
+	cout << "SCC 그룹 수 : " << SCC.size() << endl;
+	for (int i = 0; i < SCC.size(); i++)
+	{
+		cout << i + 1 << " 번째 SCC : ";
+		for (int j = 0; j < SCC[i].size(); j++)
+		{
+			cout << SCC[i].at(j) << " ";
+		}
+		cout << endl;
+	}
+
+	return 0;
+}
