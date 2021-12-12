@@ -8,6 +8,7 @@
 using namespace std;
 
 int parents[NODE_COUNT + 1] = { 0, };
+bool visited[NODE_COUNT + 1] = { 0, };
 bool finished[NODE_COUNT + 1] = { 0, };
 vector<vector<int>> SCC;
 stack<int> s;
@@ -15,17 +16,17 @@ vector<int> edges[NODE_COUNT + 1];
 
 int dfs(int node)
 {
-	parents[node] = node;	// 노드별로 각각 부모 노드 설정
 	s.push(node);
+	visited[node] = true;
 
 	for (int i = 0; i < edges[node].size(); i++)
 	{
 		int nextNode = edges[node].at(i);
-		if (parents[nextNode] == 0)	// 방문하지 않음
+		if (visited[nextNode] == false)	// 방문하지 않음
 		{
 			parents[node] = min(parents[node], dfs(nextNode));
 		}
-		else if (finished[nextNode] == false)
+		else if (finished[nextNode] == false)	// 
 		{
 			parents[node] = parents[nextNode];
 		}
@@ -50,6 +51,8 @@ int dfs(int node)
 
 int main()
 {
+	for (int i = 0; i <= NODE_COUNT; i++) parents[i] = i;
+	
 	edges[1].push_back(2);
 	edges[2].push_back(3);
 	edges[3].push_back(1);
@@ -67,7 +70,7 @@ int main()
 
 	for (int i = 1; i <= NODE_COUNT; i++)
 	{
-		if (parents[i] == 0) dfs(i);
+		if (visited[i] == false) dfs(i);
 	}
 
 	cout << "SCC 그룹 수 : " << SCC.size() << endl;
