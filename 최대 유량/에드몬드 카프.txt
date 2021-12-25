@@ -1,0 +1,113 @@
+#include <iostream>
+#include <queue>
+#include <vector>
+/*
+답 : 19
+*/
+#define INF 1000000000
+#define NODE_COUNT 6	
+
+using namespace std;
+
+vector<int> edges[NODE_COUNT + 1];	// 간선정보
+int capacity[NODE_COUNT + 1][NODE_COUNT + 1] = { 0, };	// 용량정보
+int flow[NODE_COUNT + 1][NODE_COUNT + 1] = { 0, };	// 유량정보
+int prevNode[NODE_COUNT + 1] = { 0, };	// 이전노드 정보
+
+// 에드몬드 카프 알고리즘 수행
+int maxFlow(int start, int end)
+{
+	int result = 0;
+	while (true)
+	{
+		// BFS로 start노드에서 end노드까지 경로 찾음
+		fill(prevNode, prevNode + NODE_COUNT + 1, -1);
+		queue<int> q;
+		q.push(start);
+		while (q.empty() == false && prevNode[end] == -1)
+		{
+			int cur = q.front();
+			q.pop();
+			for (int i = 0; i < edges[cur].size(); i++)
+			{
+				int next = edges[cur].at(i);
+				if (prevNode[next] != -1)	continue;
+
+				if (capacity[cur][next] - flow[cur][next] > 0)
+				{
+					prevNode[next] = cur;
+					q.push(next);
+					if (next == end) break;
+				}
+			}
+		}
+
+		if (prevNode[end] == -1) break;	// 시작점에서 끝점까지 도달 할 수 없을경우(더이상 경로가 없음)
+
+		// 경로중 흐를 수 있는 가장 작은 유량 찾기
+		int minFlow = INF;
+		for (int i = end; i != start; i = prevNode[i])
+		{
+			int prev = prevNode[i];
+			minFlow = min(minFlow, capacity[prev][i] - flow[prev][i]);
+		}
+
+		// start 에서 end까지 최소유량을 흘려보내주고, 유량(flow)값을 갱신시킴
+		for (int i = end; i != start; i = prevNode[i])
+		{
+			int prev = prevNode[i];
+			flow[prev][i] += minFlow;
+			flow[i][prev] -= minFlow;	// 음의유량 계산
+		}
+
+		result += minFlow;
+	}
+	return result;
+}
+
+int main()
+{
+	edges[1].push_back(2);
+	edges[2].push_back(1);
+	capacity[1][2] = 12;
+
+	edges[1].push_back(4);
+	edges[4].push_back(1);
+	capacity[1][4] = 11;
+
+	edges[2].push_back(3);
+	edges[3].push_back(2);
+	capacity[2][3] = 6;
+
+	edges[2].push_back(4);
+	edges[4].push_back(2);
+	capacity[2][4] = 3;
+
+	edges[2].push_back(5);
+	edges[5].push_back(2);
+	capacity[2][5] = 5;
+
+	edges[2].push_back(6);
+	edges[6].push_back(2);
+	capacity[2][6] = 9;
+
+	edges[3].push_back(6);
+	edges[6].push_back(3);
+	capacity[3][6] = 8;
+
+	edges[4].push_back(5);
+	edges[5].push_back(4);
+	capacity[4][5] = 9;
+
+	edges[5].push_back(3);
+	edges[3].push_back(5);
+	capacity[5][3] = 3;
+
+	edges[5].push_back(6);
+	edges[6].push_back(5);
+	capacity[5][6] = 4;
+
+	cout << maxFlow(1, 6);
+
+	return 0;
+}

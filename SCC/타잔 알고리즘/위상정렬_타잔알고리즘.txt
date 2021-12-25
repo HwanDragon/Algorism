@@ -1,0 +1,174 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <queue>
+
+/*
+사이클이 포함되어있는 그래프에서 특정 노드에서부터 간선을 따라 간다고 했을 때,
+최대 몇개의 노드를 지나칠수 있는지 확인
+시작노드 : startPos
+*/
+
+#define NODE_COUNT 8
+
+using namespace std;
+
+int startPos, visitId = 0, sccGroupId = 1;	// 시작 노드 번호, 방문 고유 아이디, SCC 그룹 아이디
+vector<int> edges[NODE_COUNT + 1];	// 간선정보 
+stack<int> st;	// 타잔알고리즘을 수행할 스택	
+bool finished[NODE_COUNT + 1] = { 0, };	// DFS 수행중인지 여부
+int discover[NODE_COUNT + 1] = { 0, };	// 발견한 정점 순서를 저장
+vector<vector<int>> SCC;	// 전체 SCC 정보 저장
+
+int degree[NODE_COUNT + 1] = { 0, };	// 진입 차수 계산
+int group[NODE_COUNT + 1] = { 0, };	// SCC별로 그룹 번호 지정
+int dp[NODE_COUNT + 1] = { 0, };	// 위상정렬을 수행하며 시작노드에서 탐색 가능한 노드 개수 저장
+
+vector<int> sccEdges[NODE_COUNT + 1];	// scc를 하나의 노드로 보고 생성한 간선정보
+bool accessFromStart[NODE_COUNT + 1] = { 0, };	// 시작점에서부터 도착이 가능한지 저장
+int sccSumInGroup[NODE_COUNT + 1] = { 0, };	// scc 그룹에 속해있는 노드의 총 개수
+
+// 그래프 생성
+void createGraph()
+{
+	// 어떻게 생긴 그래프인지 그림판이나 종이에 꼭 그려볼 것
+	edges[1].push_back(2);
+
+	edges[3].push_back(1);
+	edges[3].push_back(5);
+
+	edges[4].push_back(2);
+
+	edges[5].push_back(4);
+
+	edges[2].push_back(6);
+	edges[6].push_back(7);
+	edges[7].push_back(8);
+	edges[8].push_back(6);
+}
+
+// 타잔 알고리즘 수행
+int dfs(int node)
+{
+	st.push(node);
+	discover[node] = ++visitId;
+	int nodeId = discover[node];
+
+	for (int i = 0; i < edges[node].size(); i++)
+	{
+		int next = edges[node].at(i);
+		if (discover[next] == -1)
+		{
+			nodeId = min(nodeId, dfs(next));
+		}
+		else if (finished[next] == false)
+		{
+			nodeId = min(nodeId, discover[next]);
+		}
+	}
+
+	if (nodeId == discover[node])
+	{
+		vector<int> scc;
+		int cnt = 0;
+		while (true)
+		{
+			int n = st.top();
+			st.pop();
+			finished[n] = true;
+			scc.push_back(n);
+			group[n] = sccGroupId;
+			cnt++;
+			if (n == node) break;
+		}
+		sccSumInGroup[sccGroupId] = cnt;	// scc별 돌의 총량
+		sccGroupId++;
+		SCC.push_back(scc);
+	}
+
+	discover[node] = nodeId;
+	return nodeId;
+}
+
+int main()
+{
+	// 초기화
+	for (int i = 0; i <= NODE_COUNT; i++) discover[i] = -1;
+
+	startPos = 3;	// 3번 노드에서부터 시작
+
+	// 그래프 생성
+	createGraph();
+
+	// 타잔 알고리즘 수행
+	for (int i = 1; i <= NODE_COUNT; i++)
+	{
+		if (discover[i] == -1) dfs(i);
+	}
+
+	// SCC로 이루어진 그래프 생성, 진입차수 계산
+	for (int node = 1; node <= NODE_COUNT; node++)
+	{
+		for (int i = 0; i < edges[node].size(); i++)
+		{
+			int next = edges[node].at(i);
+			if (group[node] != group[next])	// node와 next의 서로 다른 scc 그룹에 속해있을 때
+			{
+				sccEdges[group[node]].push_back(group[next]);
+				degree[group[next]]++;
+			}
+		}
+	}
+
+	// dp 배열 초기화
+	for (int i = 1; i < sccGroupId; i++)
+	{
+		dp[i] = sccSumInGroup[i];
+	}
+
+	queue<int> q;
+	// 진입차수가 0인 항목, 시작지점 큐에 추가
+	for (int i = 1; i < sccGroupId; i++)
+	{
+		if (degree[i] == 0)
+			q.push(i);
+	}
+	accessFromStart[group[startPos]] = true;	// 시작지점으로부터 도달할 수 있는지 체크
+
+	// 위상정렬
+	while (q.empty() == false)
+	{
+		int cur = q.front();
+		q.pop();
+
+		for (int i = 0; i < sccEdges[cur].size(); i++)
+		{
+			int next = sccEdges[cur].at(i);
+
+			if (accessFromStart[cur] == true)
+			{
+				if (dp[next] < dp[cur] + sccSumInGroup[next])
+				{
+					dp[next] = dp[cur] + sccSumInGroup[next];
+				}
+				accessFromStart[next] = true;
+			}
+
+			degree[next]--;	// 진입차수 감소
+			if (degree[next] == 0)	// 진입차수가 0이면 큐에 추가
+				q.push(next);
+		}
+	}
+
+	// 시작 정점으로부터 방문 가능한 노드여야 하고, 그 중 최대값 출력
+	int maxValue = 0;
+	for (int i = 1; i < sccGroupId; i++)
+	{
+		if (accessFromStart[i] == true)
+			maxValue = max(dp[i], maxValue);
+	}
+
+	cout << maxValue << "\n";
+
+	return 0;
+}
