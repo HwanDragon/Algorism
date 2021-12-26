@@ -1,0 +1,64 @@
+#include <iostream>
+#include <vector>
+
+#define NODE_COUNT 3
+
+using namespace std;
+
+vector<int> edges[NODE_COUNT + 1];	// 간선 정보
+bool visited[NODE_COUNT + 1] = { 0, };	// A그룹 노드 방문 했는지 여부
+int bGroupMatched[NODE_COUNT + 1] = { 0, };	// B 그룹 노드에 매칭되어있는 A그룹 노드 정보
+int aGroupMatched[NODE_COUNT + 1] = { 0, };	// A 그룹 노드에 매칭되어있는 B그룹 노드 정보
+
+// 이분 매칭 알고리즘 수행
+bool dfs(int node)
+{
+	if (visited[node] == true)	// 이미 매칭된 노드는 pass
+		return false;
+
+	visited[node] = true;	// 방문 처리
+	// 모든 간선정보를 확인(B 그룹 노드 확인)하여 매칭이 안되어있으면 매칭시킴
+	// 매칭 되어있을 경우 매칭되어있는 노드에게 다른 B그룹 노드에 매칭 할 수 있는지 재귀적으로 확인함
+	for (int i = 0; i < edges[node].size(); i++)
+	{
+		int next = edges[node].at(i);
+		// 매칭이 안되어있거나 다른곳으로 매칭이 가능할 경우
+		if (bGroupMatched[next] == 0 || dfs(bGroupMatched[next]))
+		{
+			bGroupMatched[next] = node;	// B 그룹의 노드가 어느 A 그룹 노드에 매칭되어있는지 정보
+			aGroupMatched[node] = next;	// 실제 문제풀 때는 없어도 되는 항목
+			return true;
+		}
+	}
+	return false;
+}
+
+int main()
+{
+	// 간선 정보 입력
+	edges[1].push_back(1);
+	edges[1].push_back(2);
+	edges[1].push_back(3);
+
+	edges[2].push_back(1);
+	edges[3].push_back(2);
+
+	// 이분 매칭 알고리즘 수행
+	int cnt = 0;
+	for (int i = 1; i <= NODE_COUNT; i++)
+	{
+		fill(visited, visited + NODE_COUNT, false);
+		if (dfs(i) == true)
+			cnt++;
+	}
+
+	// 결과 출력
+	cout << "총 매칭된 노드 개수 : " << cnt << endl;
+	for (int i = 1; i <= NODE_COUNT; i++)
+	{
+		cout << i << " 번 매칭 : " << aGroupMatched[i] << endl;
+	}
+
+
+	return 0;
+}
