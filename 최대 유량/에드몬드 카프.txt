@@ -80,42 +80,52 @@ int main()
 	edges[1].push_back(2);
 	edges[2].push_back(1);
 	capacity[1][2] = 12;
+	capacity[2][1] = 12;
 
 	edges[1].push_back(4);
 	edges[4].push_back(1);
 	capacity[1][4] = 11;
+	capacity[4][1] = 11;
 
 	edges[2].push_back(3);
 	edges[3].push_back(2);
 	capacity[2][3] = 6;
+	capacity[3][2] = 6;
 
 	edges[2].push_back(4);
 	edges[4].push_back(2);
 	capacity[2][4] = 3;
+	capacity[4][2] = 3;
 
 	edges[2].push_back(5);
 	edges[5].push_back(2);
 	capacity[2][5] = 5;
+	capacity[5][2] = 5;
 
 	edges[2].push_back(6);
 	edges[6].push_back(2);
 	capacity[2][6] = 9;
+	capacity[6][2] = 9;
 
 	edges[3].push_back(6);
 	edges[6].push_back(3);
 	capacity[3][6] = 8;
+	capacity[6][3] = 8;
 
 	edges[4].push_back(5);
 	edges[5].push_back(4);
 	capacity[4][5] = 9;
+	capacity[5][4] = 9;
 
 	edges[5].push_back(3);
 	edges[3].push_back(5);
 	capacity[5][3] = 3;
+	capacity[3][5] = 3;
 
 	edges[5].push_back(6);
 	edges[6].push_back(5);
 	capacity[5][6] = 4;
+	capacity[6][5] = 4;
 
 	cout << maxFlow(1, 6);
 
