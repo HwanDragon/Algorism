@@ -1,0 +1,82 @@
+#include <iostream>
+#include <queue>
+/*
+spfa는 벨만포드 알고리즘을 개량하여 속도를 향상시킨 알고리즘으로,
+벨만포드는 모든 정점을 확인하지만, 
+spfa는 어떤 노드가 변경되었을 경우에만 후보지로 추가하여 갱신하고,
+그 정점으로부터 또 갱신되는 정점이 있으면 후보지에 추가하여 다시 갱신해나감.
+최악의 경우 시간복잡도는 O(V*E) 이기때문에 음의 간선이 없을경우에는 다익스트라 알고리즘을 수행하는것이 나음
+하지만 보통은 O(V + E)의 시간복잡에도에 동작함
+*/
+/*
+답 : 0 4 2 9 5 20
+*/
+
+#define INF 1000000000
+#define NODE_COUNT 6
+
+using namespace std;
+
+vector<pair<int, int>> edges[NODE_COUNT];	// 간선정보
+bool inQueue[NODE_COUNT] = { 0, };	// i번째 노드가 큐에 들어있는지 확인
+int dists[NODE_COUNT] = { 0, };	// 최단거리
+int cycle[NODE_COUNT] = { 0, };	// 음의 사이클 감지 여부
+
+bool spfa(int start)
+{
+	queue<int> q;	// 큐 생성
+	q.push(start);	// 탐색을 시작할 노드 큐에 추가
+	dists[start] = 0;	// 해당노드 최단거리 0으로 초기화
+	inQueue[start] = true;	// 큐에 해당 노드가 들어갔음을 표시
+
+	while (q.empty() == false)
+	{
+		int cur = q.front();
+		q.pop();
+		inQueue[cur] = false;	// 큐에서 해당 노드를 꺼냄
+		for (int i = 0; i < edges[cur].size(); i++)
+		{
+			pair<int, int> p = edges[cur].at(i);
+			int next = p.first;
+			int weight = p.second;
+			if (dists[next] > dists[cur] + weight)	// 최단경로 갱신
+			{
+				dists[next] = dists[cur] + weight;
+				cycle[next]++;	// 음의 사이클 확인을 위해 값이 갱신될때마다 1번씩 값을 증가시킴
+				if (cycle[next] > NODE_COUNT) return true;	// n번째 이상 값이 갱신된다면 음의 사이클 존재
+
+				if (inQueue[next] == true) continue;	// 큐에 이미 들어가있을경우 pass
+
+				q.push(next);	// 큐에 해당 노드 추가
+				inQueue[next] = true;	// 큐에 해당 노드가 추가됨을 표시
+			}
+		}
+	}
+	return false;
+}
+
+int main()
+{
+	// 초기화
+	for (int i = 0; i < NODE_COUNT; i++) dists[i] = INF;
+
+	// 간선정보 입력
+	edges[0].push_back({1, 4});
+	edges[0].push_back({2, 2});
+	edges[1].push_back({2, 5});
+	edges[1].push_back({3, 10});
+	edges[2].push_back({4, 3});
+	edges[4].push_back({3, 4});
+	edges[3].push_back({5, 11});
+
+	// spfa 알고리즘 실행
+	spfa(0);
+
+	// 결과 출력
+	for (int i = 0; i < NODE_COUNT; i++)
+	{
+		cout << dists[i] << " ";
+	}
+	cout << endl;
+	return 0;
+}
