@@ -1,0 +1,156 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+#define INF 1000000000
+#define NODE_COUNT 8	// Source : 0, Sink : 7, 사람 : 1~3, 노트북 : 4 ~ 7
+#define SOURCE 0	// Source
+#define SINK 7	// Sink
+
+using namespace std;
+
+vector<int> edges[NODE_COUNT];	// 용량 계산하기 위한 간선정보
+int capacity[NODE_COUNT][NODE_COUNT] = { 0, };	// 용량 정보
+int flow[NODE_COUNT][NODE_COUNT] = { 0, };	// 유량 정보
+int costs[NODE_COUNT][NODE_COUNT];	//	최단거리를 찾기위한 간선정보(급여)
+int prevNode[NODE_COUNT] = { 0, };	// 이전 노드 저장
+
+bool inQueue[NODE_COUNT] = { 0, }; // SPFA 알고리즘에서 큐에 추가되었는지 여부
+int dists[NODE_COUNT] = { 0, };	// 최단 경로 탐색
+
+void mcmf(int start, int end)
+{
+	int result = 0;	// 최소 비용 계산
+	int cnt = 0;	// 살 수 잇는 노트북 개수 카운팅
+	while (true)
+	{
+		// 초기화
+		fill(prevNode, prevNode + NODE_COUNT, -1);
+		fill(dists, dists + NODE_COUNT, INF);	// 최단경로 저장 배열은 INF로 초기화
+
+		// SPFA 알고리즘 사용
+		queue<int> q;
+		q.push(start);
+		inQueue[start] = true;	// 큐에 추가 여부 체크
+		dists[start] = 0;	// 시작지점 최단거리 비용 0으로 세팅
+
+		while (q.empty() == false)
+		{
+			int cur = q.front();
+			q.pop();
+			inQueue[cur] = false;	// 큐에서 제거 여부 체크
+
+			for (int i = 0; i < edges[cur].size(); i++)
+			{
+				int next = edges[cur].at(i);
+				int weight = costs[cur][next];
+				// 최단거리 탐색과, 잔여용량을 같이 확인
+				if (dists[next] > dists[cur] + weight && capacity[cur][next] - flow[cur][next] > 0)
+				{
+					dists[next] = dists[cur] + weight;	// 최단거리 갱신
+					prevNode[next] = cur;	// 이전노드 저장
+					if (inQueue[next] == true) continue;	// 이미 큐에 들어가 있는 경우
+
+					q.push(next);	// 큐에 추가
+					inQueue[next] = true;
+				}
+			}
+		}
+
+		// 시작정점에서 도착정점까지 더이상 경로가 없음
+		if (prevNode[end] == -1) break;
+
+		// 흘릴 수 있는 유량 계산
+		int minFlow = INF;
+		for (int i = end; i != start; i = prevNode[i])
+		{
+			int prev = prevNode[i];
+			minFlow = min(minFlow, capacity[prev][i] - flow[prev][i]);
+		}
+
+		for (int i = end; i != start; i = prevNode[i])
+		{
+			// 유량 흘려보내기
+			int prev = prevNode[i];
+			flow[prev][i] += minFlow;
+			flow[i][prev] -= minFlow;	// 음의 간선 처리
+
+			// 해당 경로로 유량을 흘릴 때 드는 비용 계산
+			result += minFlow * costs[prev][i];	
+		}
+		cnt++;
+	}
+
+	cout << cnt << "\n" << result;	// 결과 출력
+}
+
+int main()
+{
+	// Source : 0, Sink : 7, 사람 : 1~3, 노트북 : 4~7
+	// 1번 사람이 4, 5, 6번 노트북을 살 수 있고, 비용은 각각 10, 20, 30
+	// 2번 사람이 4, 5번 노트북을 살 수 있고, 비용은 15, 20
+	// 3번 사람이 5번 노트북을 살 수 있고, 비용은 10
+	
+	// 위의 경우에서 총 구매할 수 있는 노트북의 대수와 총 비용은?
+	
+	// Source와 사람 연결
+	edges[SOURCE].push_back(1);
+	edges[SOURCE].push_back(2);
+	edges[SOURCE].push_back(3);
+	capacity[SOURCE][1] = 1;
+	capacity[SOURCE][2] = 1;
+	capacity[SOURCE][3] = 1;
+
+	// 노트북과 Sink 연결
+	edges[4].push_back(SINK);
+	edges[5].push_back(SINK);
+	edges[6].push_back(SINK);
+	capacity[4][SINK] = 1;
+	capacity[5][SINK] = 1;
+	capacity[6][SINK] = 1;
+
+	// 사람과 노트북 연결
+	// 1번 사람 연결
+	edges[1].push_back(4);
+	edges[4].push_back(1);
+	capacity[1][4] = 100000000;	// INF
+	costs[1][4] = 10;
+	costs[4][1] = -10;
+
+	edges[1].push_back(5);
+	edges[5].push_back(1);
+	capacity[1][5] = 100000000;	// INF
+	costs[1][5] = 20;
+	costs[5][1] = -20;
+
+	edges[1].push_back(6);
+	edges[6].push_back(1);
+	capacity[1][6] = 100000000;	// INF
+	costs[1][6] = 30;
+	costs[6][1] = -30;
+
+	// 2번 사람 연결
+	edges[2].push_back(4);
+	edges[4].push_back(2);
+	capacity[2][4] = 100000000;	// INF
+	costs[2][4] = 15;
+	costs[4][2] = -15;
+
+	edges[2].push_back(5);
+	edges[5].push_back(2);
+	capacity[2][5] = 100000000;	// INF
+	costs[2][5] = 20;
+	costs[5][2] = -20;
+
+	// 3번 사람 연결
+	edges[3].push_back(5);
+	edges[5].push_back(3);
+	capacity[3][5] = 100000000;	// INF
+	costs[3][5] = 10;
+	costs[5][3] = -10;
+
+
+	mcmf(SOURCE, SINK);
+
+	return 0;
+}

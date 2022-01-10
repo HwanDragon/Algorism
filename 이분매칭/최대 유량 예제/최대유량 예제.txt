@@ -1,0 +1,109 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+#define NODE_COUNT 8	// 노드 개수는 source + sink + 사람(3) + 노트북(3) 으로 총 8개로 잡음
+
+vector<int> edges[NODE_COUNT];	// 0번 : Source, 7번 : Sink, 1~3 : 사람, 4~6 : 노트북
+int capacity[NODE_COUNT][NODE_COUNT] = { 0, };	// 용량 정보
+int flow[NODE_COUNT][NODE_COUNT] = { 0, };	// 유량 정보
+int prevNode[NODE_COUNT] = { 0, };	// 이전 노드 정보
+
+// 에드몬드 카프 알고리즘 수행
+int edmondKarp(int start, int end)
+{
+	int result = 0;
+	while (true)
+	{
+		// 초기화
+		fill(prevNode, prevNode + NODE_COUNT, -1);
+
+		// 시작점에서 도착점까지 경로 찾음
+		queue<int> q;
+		q.push(start);
+		while (q.empty() == false && prevNode[end] == -1)
+		{
+			int cur = q.front();
+			q.pop();
+			for (int i = 0; i < edges[cur].size(); i++)
+			{
+				int next = edges[cur].at(i);
+				if (prevNode[next] == -1 && capacity[cur][next] - flow[cur][next] > 0)
+				{
+					q.push(next);
+					prevNode[next] = cur;
+					if (next == end) break;
+				}
+			}
+		}
+
+		// 시작노드에서 끝 노드까지 도달할 수 없다면 모든 용량이 가득 참
+		if (prevNode[end] == -1) break;	
+
+		int minFlow = 1000000;	// INF
+
+		for (int i = end; i != start; i = prevNode[i])
+		{
+			int prev = prevNode[i];
+			minFlow = min(minFlow, capacity[prev][i] - flow[prev][i]);
+		}
+
+		for (int i = end; i != start; i = prevNode[i])
+		{
+			int prev = prevNode[i];
+			flow[prev][i] += minFlow;
+			flow[i][prev] -= minFlow;
+		}
+
+		result += minFlow;
+	}
+
+	return result;
+}
+
+int main()
+{
+	// Source : 0, Sink : 7
+	// 1~3번 사람이 4~6번 노트북을 원할 떄
+	// 그중 1개씩 가져간다고 할 떄 매칭할 수 있는 최대 개수
+	// 답 : 3
+	edges[1].push_back(4);	
+	edges[4].push_back(1);
+	capacity[1][4] = 1;
+
+	edges[1].push_back(5);	
+	edges[5].push_back(1);	
+	capacity[1][5] = 1;
+
+	edges[1].push_back(6);	
+	edges[6].push_back(1);	
+	capacity[1][6] = 1;
+
+	edges[2].push_back(1);
+	edges[1].push_back(2);
+	capacity[2][1] = 1;
+
+	edges[3].push_back(5);
+	edges[5].push_back(3);
+	capacity[3][5] = 1;
+
+	// Source(0)와 사람 연결, 용량은 1
+	for (int i = 1; i <= 3; i++)
+	{
+		edges[0].push_back(i);
+		capacity[0][i] = 1;	// 용량 1
+	}
+
+	// 노트북(4~6)과 Sink(7) 연결, 용량은 1
+	for (int i = 4; i <= 6; i++)
+	{
+		edges[i].push_back(7);
+		capacity[i][7] = 1;	// 용량 1
+	}
+
+	cout << edmondKarp(0, 7);	// Source : 0,  Sink : 7
+
+	return 0;
+}
