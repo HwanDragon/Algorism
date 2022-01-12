@@ -18,9 +18,9 @@ void unionParent(int first, int second, int parent[])
 	int secondParent = getParent(second, parent);
 
 	if (firstParent < secondParent)
-		parent[second] = firstParent;
+		parent[secondParent] = firstParent;
 	else
-		parent[first] = secondParent;
+		parent[firstParent] = secondParent;
 }
 
 bool findParent(int first, int second, int parent[])
