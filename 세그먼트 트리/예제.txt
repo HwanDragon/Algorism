@@ -1,0 +1,80 @@
+#include <iostream>
+
+#define NODE_COUNT 12
+
+using namespace std;
+
+long long nums[NODE_COUNT + 1] = { 0, 1, 9, 3, 8, 4, 5, 5, 9, 10, 3, 4, 5};	// 값을 저장할 배열
+long long segTree[(NODE_COUNT + 1) * 4] = { 0, };	// 세그먼트 트리
+
+// 초기화
+long long init(int start, int end, int node)
+{
+	// 시작과 끝이 같을경우(최하위 노드)
+	if (start == end) return segTree[node] = nums[start];
+
+	// 최하위 노드가 아니라면 재귀적으로 나눠서 값을 구함
+	int mid = (start + end) / 2;
+	return segTree[node] = init(start, mid, node * 2) + init(mid + 1, end, node * 2 + 1);
+}
+
+// 구간쿼리 계싼
+long long sum(int start, int end, int left, int right, int node)
+{
+	// 구간을 벗어남
+	if (start > right || end < left) return 0;
+
+	// 구간에 포함됨
+	if (start >= left && end <= right) return segTree[node];
+
+	// 구간이 걸침
+	int mid = (start + end) / 2;
+	return sum(start, mid, left, right, node * 2) + sum(mid + 1, end, left, right, 2 * node + 1);
+}
+
+void update(int start, int end, int node, int index, long long diff)
+{
+	// 구간 밖일 경우
+	if (index < start || index > end) return;
+
+	// 구간에 포함된 경우
+	segTree[node] += diff;	// 값 갱신
+	if (start == end) return;	// 최하위 노드일 경우 빠져나감
+
+	// 재귀적으로 나눠서 값 갱신
+	int mid = (start + end) / 2;
+	update(start, mid, node * 2, index, diff);
+	update(mid + 1, end, node * 2 + 1, index, diff);
+}
+
+int main()
+{
+	// 초기화
+	init(1, NODE_COUNT, 1);
+
+	cout << "배열 원소 : ";
+	for (int i = 1; i <= NODE_COUNT; i++)
+	{
+		cout << nums[i] << " ";
+	}
+	cout << endl;
+	cout << "2 ~ 5의 구갑합 : " << sum(1, NODE_COUNT, 2, 5, 1) << "\n";	// 2~5 구간합 계산
+	cout << "4 ~ 10의 구갑합 : " << sum(1, NODE_COUNT, 4, 10, 1) << "\n";	// 4~10 구간합 계산
+	cout << "1 ~ 6의 구갑합 : " << sum(1, NODE_COUNT, 1, 6, 1) << "\n";	// 1~6 구간합 계산
+
+	cout << "\n3번째 원소를 10으로 변경 \n\n";
+	update(1, NODE_COUNT, 1, 3, 10 - nums[3]);
+	nums[3] = 10;
+
+	cout << "배열 원소 : ";
+	for (int i = 1; i <= NODE_COUNT; i++)
+	{
+		cout << nums[i] << " ";
+	}
+	cout << endl;
+	cout << "2 ~ 5의 구갑합 : " << sum(1, NODE_COUNT, 2, 5, 1) << "\n";	// 2~5 구간합 계산
+	cout << "4 ~ 10의 구갑합 : " << sum(1, NODE_COUNT, 4, 10, 1) << "\n";	// 4~10 구간합 계산
+	cout << "1 ~ 6의 구갑합 : " << sum(1, NODE_COUNT, 1, 6, 1) << "\n";	// 1~6 구간합 계산
+
+	return 0;
+}

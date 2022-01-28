@@ -1,0 +1,126 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+#define NODE_COUNT 101	// 노드개수 설정
+#define INF 1000000000
+
+using namespace std;
+
+// 유량 네트워크 문제를 인접 리스트로 표현
+class Edge {
+public :
+	int startNode;	// 시작 노드
+	int destNode;	// 도착 노드
+	int capacity;	// 시작노드와 도착노드 사이의 용령
+	int flow;	// 간선 사이에 흐르고 있는 유량
+	Edge* reverse;	// 역방향 간선 저장
+
+	// 남은 잔여용량 반환
+	int getRegidure()	
+	{
+		return this->capacity - this->flow;
+	}
+
+	// f 만큼 유량 흘림
+	void addFlow(int f)
+	{
+		this->flow += f;
+		reverse->flow -= f;
+	}
+
+	Edge(int startNode, int destNode, int capacity)
+	{
+		this->startNode = startNode;
+		this->destNode = destNode;
+		this->capacity = capacity;
+		this->flow = 0;	// 유량은 0으로 초기화
+	}
+};
+
+int n, m;	// 노드 수, 간선 수
+vector<Edge*> edges[NODE_COUNT];	// 간선정보 저장
+Edge* prevNode[NODE_COUNT];	// 이전 간선 정보 저장
+
+// 시작노드와 도착노드를 입력받아 간선 추가(역방향 간선 포함)
+void addEdge(int startNode, int destNode, int capacity)
+{
+	Edge* forwardEdge = new Edge(startNode, destNode, capacity);	// 정방향 간선
+	Edge* reverseEdge = new Edge(destNode, startNode, 0);	// 역방향 간선
+	forwardEdge->reverse = reverseEdge;	// 정방향 간선의 역방향 간선 추가
+	reverseEdge->reverse = forwardEdge;	// 역방향 간선의 역방향 간선 추가
+	edges[startNode].push_back(forwardEdge);
+	edges[destNode].push_back(reverseEdge);
+}
+
+// 인접리스트 표현을 이용한 에드몬드 카프 알고리즘 수행
+int edmondKarp(int start, int end)
+{
+	int result = 0;
+	while (true)
+	{
+		fill(prevNode, prevNode + NODE_COUNT, nullptr);	// 이전 노드 저장 배열을 null 포인터로 초기화
+		queue<int> q;
+		q.push(start);	// 시작 노드 큐에 추가
+		while (q.empty() == false && prevNode[end] == nullptr)
+		{
+			int cur = q.front();	// 현재 노드
+			q.pop();
+			for (int i = 0; i < edges[cur].size(); i++)	// 현재 노드에 연결되어잇는 간선 전부 탐색
+			{
+				int next = edges[cur].at(i)->destNode;	// 현재 노드에서 i번째 노드 간선에서 도착노드(destNode)꺼냄
+				if (prevNode[next] != nullptr) continue;	// 꺼낸 노드가 이미 방문한 노드일 경우 pass
+
+				if (edges[cur].at(i)->getRegidure() > 0)	// 현재 노드에서 next 노드로 흐를 수 있는 용량이 남아있을 경우
+				{
+					prevNode[next] = edges[cur].at(i);	// cur -> next 인 간선 정보 저장
+					q.push(next);	// next 노드 큐에 추가
+					if (next == end) break;
+				}
+			}
+		}
+
+		if (prevNode[end] == nullptr) break;	// end 노드까지 도착이 불가능 할경우
+
+		// 흘릴 수 있는 최대 유량 찾음
+		int minFlow = INF;
+		for (int i = end; i != start; i = prevNode[i]->startNode)	// 이전 노드로 하나씩 거슬러 올라감
+		{
+			minFlow = min(minFlow, prevNode[i]->getRegidure());
+		}
+
+		// 흘릴 수 있는 최대 유량만큼 간선에 유량을 흘림
+		for (int i = end; i != start; i = prevNode[i]->startNode)
+		{
+			prevNode[i]->addFlow(minFlow);
+		}
+		result += minFlow;
+	}
+	return result;
+}
+
+int main()
+{
+	/*
+	입력 예제
+	3 2
+	1 2 6
+	2 3 5
+
+	답 : 6
+	*/
+
+	// 입력 예제 집어넣어서 답 확인
+	cin >> n >> m;
+	int first,  second, weight;
+	for (int i = 0; i < m; i++)
+	{
+		cin >> first >> second >> weight;
+		addEdge(first, second, weight);
+	}
+
+	// 에드몬드 카프 알고리즘 수행
+	cout << edmondKarp(1, n);
+
+	return 0;
+}
