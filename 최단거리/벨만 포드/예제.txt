@@ -2,6 +2,10 @@
 #include <vector>
 
 /*
+https://developer-davii.tistory.com/89
+https://jordano-jackson.tistory.com/46
+
+
 입력 예제1
 5 7
 1 2 5
