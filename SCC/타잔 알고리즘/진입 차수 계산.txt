@@ -1,0 +1,118 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <algorithm>
+
+#define NODE_COUNT 100
+
+using namespace std;
+
+int n, m, visitId = 0, sccId = 1;	// 노드수, 간선수, 방문순서 고유 아이디, SCC별 그룹 아이디
+vector<int> edges[NODE_COUNT];		// 간선 정보
+bool finished[NODE_COUNT] = { 0, };	// DFS가 수행중인지 여부
+int discover[NODE_COUNT] = { 0, };	// 노드 방문 순서를 저장할 배열
+stack<int> st;	// 타잔 알고리즘을 수행할 스택	
+vector<vector<int>> SCC;	// 전체 SCC 그룹
+int degree[NODE_COUNT] = { 0, };	// 진입 차수 저장
+int group[NODE_COUNT] = { 0, };	// SCC 그룹별 아이디 저장
+
+// 타잔 알고리즘 수행
+int dfs(int node)
+{
+	discover[node] = ++visitId;
+	st.push(node);
+	int nodeId = discover[node];
+
+	// 모든 엣지 탐색
+	for (int i = 0; i < edges[node].size(); i++)
+	{
+		int next = edges[node].at(i);
+		if (discover[next] == -1)
+		{
+			nodeId = min(nodeId, dfs(next));
+		}
+		else if (finished[next] == false)
+		{
+			nodeId = min(nodeId, discover[next]);
+		}
+	}
+
+	if (nodeId == discover[node])
+	{
+		vector<int> scc;
+		while (true)
+		{
+			int n = st.top();
+			st.pop();
+			scc.push_back(n);
+			finished[n] = true;
+			group[n] = sccId;
+			if (n == node) break;
+		}
+		sccId++;
+		SCC.push_back(scc);
+	}
+
+	discover[node] = nodeId;
+	return nodeId;
+}
+
+int main()
+{
+	// 초기화
+	for (int i = 0; i < NODE_COUNT; i++) discover[i] = -1;
+
+	// 사용자 입력 받음
+	/*
+	입력 : 
+	그림으로 그려보고 디버그모드로 SCC 그룹이 맞게 들어갔는지 확인할것
+	8 9
+
+	1 4
+	4 5
+	5 1
+	1 6
+	6 7
+	2 7
+	7 3
+	3 7
+	7 2
+	8 7
+	*/
+	cin >> n >> m;
+	int first, second;
+	for (int i = 0; i < m; i++)
+	{
+		cin >> first >> second;
+		edges[first].push_back(second);
+	}
+
+	// 타잔 알고리즘 수행
+	for (int i = 1; i <= n; i++)
+	{
+		if (discover[i] == -1) dfs(i);
+	}
+
+	// 진입차수 계산
+	for (int node = 0; node < n; node++)
+	{
+		for (int i = 0; i < edges[node].size(); i++)
+		{
+			int next = edges[node].at(i);
+			if (group[node] != group[next])
+			{
+				degree[group[next]]++;
+			}
+		}
+	}
+
+	// 진입차수가 0인 SCC 그룹 개수 확인
+	int cnt = 0;
+	for (int i = 1; i < sccId; i++)
+	{
+		if (degree[i] == 0) cnt++;
+	}
+	cout << cnt;
+
+	return 0;
+}
