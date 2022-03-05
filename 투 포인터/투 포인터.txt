@@ -1,0 +1,99 @@
+#include <iostream>
+
+/*
+
+N개의 수로 된 수열 A[1], A[2], …, A[N] 이 있을 때
+
+이 수열의 i번째 수부터 j번째 수까지의 합 
+
+A[i] + A[i + 1] + … + A[j - 1] + A[j]
+
+이 M이 되는 경우의 수를 구하는 프로그램을 작성
+
+ 
+
+입력 : N ,M, 수열
+
+ 
+
+입력 : 
+
+10 5
+
+1 2 3 4 2 5 3 1 1 2
+
+출력 : 
+
+3
+
+*/
+
+ 
+
+using namespace std;
+
+ 
+
+int n, m;
+
+int nums[501];
+
+ 
+
+int main()
+
+{
+
+	// 사용자 입력 받음
+
+	cin >> n >> m;
+
+	for (int i = 0; i < n; i++)
+
+	{
+
+		cin >> nums[i];
+
+	}
+
+ 
+
+	// start, end를 각각 0지점부터 1칸씩 이동시켜 m과 같은지 확인함
+
+	// num이 m보다 작을경우는 end 포인터를 오른쪽으로 한칸씩 이동시키고, 그게 아닐경우 start를 오른쪽으로 이동시킴
+
+	// end를 오른쪽으로 이동시킬대는 num에 nums[end]를 더해주고, start를 이동시킬때는 num에서 nums[start]를 빼줌
+
+	int end = 0, result = 0, sum = nums[0];
+
+	for (int start = 0; start < n; start++)
+
+	{
+
+		while (sum < m && end < n)	// sum이 m보다 작고, end는 수열의 크기보다 작아야 함
+
+		{
+
+			end++;
+
+			sum += nums[end];
+
+		}
+
+ 
+
+		if (sum == m)	// sum이 m과 같을 경우 result증가시킴
+
+			result++;
+
+ 
+
+		sum -= nums[start];	// start를 오른쪽으로 한칸 이동하기위해 기존의 start값을 빼줌
+
+	}
+
+	cout << result;	// 최종 결과 출력
+
+	return 0;
+
+}
