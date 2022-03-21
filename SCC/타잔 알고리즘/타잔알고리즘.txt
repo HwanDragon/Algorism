@@ -4,7 +4,7 @@
 #include <algorithm>
 
 /*
-정답 : 
+정답 :
 SCC 개수 : 4
 0 번째 scc : 3 2 1
 1 번째 scc : 6 7 5
@@ -17,7 +17,7 @@ SCC 개수 : 4
 using namespace std;
 
 int v, e;
-int id = 0;	// 방문 순서 아이디
+int discoverId = 0;	// 방문 순서 아이디
 int discover[NODE_COUNT + 1] = { 0, };	// 발견한 정점 순서
 bool finished[NODE_COUNT + 1] = { 0, };	// DFS가 수행중인지 여부 확인
 stack<int> st;	// SCC집합을 구분짓기위한 스택
@@ -27,17 +27,17 @@ vector<int> edges[NODE_COUNT + 1];	// 간선정보
 int dfs(int node)
 {
 	st.push(node);	// 스택에 노드를 추가함
-	discover[node] = ++id;	// 방문 순서를 순차적으로	기록함
+	discover[node] = ++discoverId;	// 방문 순서를 순차적으로	기록함
 
 	// 인접 노드를 탐색하면서 사이클이 발생할 경우 사이클이 발생한 노드의 방문 순서 아이디를 가져오기 위함
-	int prevVisitNodeId = discover[node];
+	int minNodeId = discover[node];
 	for (int i = 0; i < edges[node].size(); i++)
 	{
 		int nextNode = edges[node].at(i);
 		if (discover[nextNode] == -1)
 		{
 			// 방문하지 않은 정점이면 방문 후 방문 순서 아이디가 더 작은 값으로 세팅
-			prevVisitNodeId = min(prevVisitNodeId, dfs(nextNode));
+			minNodeId = min(minNodeId, dfs(nextNode));
 		}
 		else if (finished[nextNode] == false)
 		{
@@ -45,18 +45,18 @@ int dfs(int node)
 			// 해당 정점은 이미 dfs를 수행하여 방문 아이디가 세팅되어 있고,
 			// 해당 노드가 이미 스택에 추가되어 있으므로
 			// dfs를 수행하는것이 아니라, 방문 아이디를 비교하여 더 작은 값으로 세팅함
-			prevVisitNodeId = min(prevVisitNodeId, discover[nextNode]);
+			minNodeId = min(minNodeId, discover[nextNode]);
 		}
 	}
 
 	// SCC의 최초 방문한 노드일 경우
-	if (discover[node] == prevVisitNodeId)
+	if (discover[node] == minNodeId)
 	{
 		// 스택에서 node가 나올때까지 꺼내서 scc 집합에 추가함
 		vector<int> scc;
 		while (true)
 		{
-			int n = st.top();	
+			int n = st.top();
 			st.pop();
 			finished[n] = true;
 			scc.push_back(n);
@@ -65,9 +65,9 @@ int dfs(int node)
 		SCC.push_back(scc);
 	}
 
-	discover[node] = prevVisitNodeId;	// 같은 그룹으로 세팅 (해도 되고 안해도 됨)
+	discover[node] = minNodeId;	// 같은 그룹으로 세팅 (해도 되고 안해도 됨)
 
-	return prevVisitNodeId;
+	return minNodeId;
 }
 
 int main()
