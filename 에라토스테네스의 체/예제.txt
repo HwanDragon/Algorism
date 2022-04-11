@@ -1,0 +1,46 @@
+#include <iostream>
+#include <cmath>
+
+#define CNT 10000001
+
+using namespace std;
+
+typedef long long ll;
+
+ll minValue, maxValue;	// 수의  범위
+bool isPrime[CNT];
+
+// 에라토스테네스의 체를 이용하여 미리 소수를 계산해둠
+void calc()
+{
+	fill(isPrime, isPrime + CNT, true);	// 모든 수를 소수로 초기화
+	isPrime[1] = false;	// 1은 소수가 아님
+
+	int j;
+	for (int i = 2; i <= sqrt(CNT); i++)	// 최대 CNT의 sqrt 까지만 계산
+	{
+		if (isPrime[i] == false) continue;	// 한번이라도 계산된 소수일 경우 pass
+
+		j = i * 2;	// 소수의 2, 3, 4, ... 배까지 모두 소수가 아니라고 체크
+		while (j < CNT)
+		{
+			isPrime[j] = false;
+			j += i;
+		}
+	}
+}
+
+int main()
+{
+	// 에라토스테네스의 체를 이용하여 소수 미리 계산
+	calc();
+
+	cin >> minValue >> maxValue;	// 왼쪽 범위, 오른쪽범위 수 입력받음
+	for (int i = minValue; i <= maxValue; i++)
+	{
+		if (isPrime[i] == true)
+			cout << i << " ";
+	}
+
+	return 0;
+}
